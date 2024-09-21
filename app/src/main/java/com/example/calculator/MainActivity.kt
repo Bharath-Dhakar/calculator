@@ -20,11 +20,13 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
+        // UI references
         val tvDisplay = findViewById<TextView>(R.id.tvDisplay)
         val result = findViewById<TextView>(R.id.result)
         val equals = findViewById<Button>(R.id.equal)
         val clear = findViewById<Button>(R.id.Clear)
         val AC = findViewById<Button>(R.id.AC)
+        val dot = findViewById<Button>(R.id.Dot)
 
         // Number buttons array
         val btns = arrayOf(
@@ -37,7 +39,7 @@ class MainActivity : AppCompatActivity() {
             R.id.btnAdd, R.id.btnSubtract, R.id.btnDivide, R.id.btnMultiply, R.id.mod
         )
 
-        // Clear button - resets everything
+        // AC button - resets everything
         AC.setOnClickListener {
             tvDisplay.text = "0"
             result.text = "0"
@@ -47,11 +49,34 @@ class MainActivity : AppCompatActivity() {
             isOperatorSet = false
         }
 
-        // Backspace (Clear last digit)
+        // Backspace button - clears the last digit
         clear.setOnClickListener {
-            tvDisplay.text = tvDisplay.text.toString().dropLast(1)
-            if (tvDisplay.text.isEmpty()) {
-                tvDisplay.text = "0"
+            if (tvDisplay.text.toString().isNotEmpty()) {
+                val lastChar = tvDisplay.text.toString().last()
+
+                // Update the number variables accordingly
+                if (!isOperatorSet) {
+                    firstNumber = if (lastChar == '.') firstNumber.dropLast(1) else firstNumber.dropLast(1)
+                } else {
+                    secondNumber = if (lastChar == '.') secondNumber.dropLast(1) else secondNumber.dropLast(1)
+                }
+
+                // Check if the last character is an operator
+                if (lastChar == ' ' && isOperatorSet) {
+                    tvDisplay.text = tvDisplay.text.toString().dropLast(3) // Remove operator and spaces
+                    operator = ""
+                    isOperatorSet = false
+                } else {
+                    // Normal backspace for numbers
+                    tvDisplay.text = tvDisplay.text.toString().dropLast(1)
+                }
+
+                // Reset display if it's empty
+                if (tvDisplay.text.isEmpty()) {
+                    tvDisplay.text = "0"
+                    firstNumber = ""
+                    secondNumber = ""
+                }
             }
         }
 
@@ -72,6 +97,20 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Dot button - to prevent multiple dots in a number
+        dot.setOnClickListener {
+            if (!isOperatorSet) {
+                if (!firstNumber.contains(".")) {
+                    firstNumber += "."
+                    tvDisplay.append(".")
+                }
+            } else {
+                if (!secondNumber.contains(".")) {
+                    secondNumber += "."
+                    tvDisplay.append(".")
+                }
+            }
+        }
 
         // Handling operator button clicks
         for (id in operators) {
@@ -85,7 +124,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Equals button - Perform calculation
+        // Equals button - perform the calculation
         equals.setOnClickListener {
             if (firstNumber.isNotEmpty() && secondNumber.isNotEmpty() && operator.isNotEmpty()) {
                 val resultValue = calculate(firstNumber, secondNumber, operator)
@@ -101,8 +140,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Function to perform real-time calculation
+    private fun performRealTimeCalculation(result: TextView) {
+        if (firstNumber.isNotEmpty() && secondNumber.isNotEmpty() && operator.isNotEmpty()) {
+            val resultValue = calculate(firstNumber, secondNumber, operator)
+            result.text = resultValue.toString()
+        }
+    }
+
+
+
     // Function to perform calculation
-    fun calculate(num1: String, num2: String, operator: String): Double {
+    private fun calculate(num1: String, num2: String, operator: String): Double {
         val number1 = num1.toDouble()
         val number2 = num2.toDouble()
 
