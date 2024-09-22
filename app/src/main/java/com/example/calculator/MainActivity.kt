@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 
@@ -77,6 +78,9 @@ class MainActivity : AppCompatActivity() {
                     firstNumber = ""
                     secondNumber = ""
                 }
+
+                // Perform real-time calculation after clearing the character
+                performRealTimeCalculation(result)
             }
         }
 
@@ -87,15 +91,33 @@ class MainActivity : AppCompatActivity() {
                 if (tvDisplay.text == "0") {
                     tvDisplay.text = ""
                 }
-                tvDisplay.append(btn.text)
 
+                // Check if operator is not set (handling firstNumber)
                 if (!isOperatorSet) {
-                    firstNumber += btn.text
+                    // Limit input to 15 digits for firstNumber
+                    if (firstNumber.length < 15) {
+                        firstNumber += btn.text
+                        tvDisplay.append(btn.text)
+                    } else {
+                        // Show a Toast message when input exceeds 15 digits for firstNumber
+                        Toast.makeText(this, "Maximum 15 digits allowed for first number", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
-                    secondNumber += btn.text
+                    // Limit input to 15 digits for secondNumber
+                    if (secondNumber.length < 15) {
+                        secondNumber += btn.text
+                        tvDisplay.append(btn.text)
+                    } else {
+                        // Show a Toast message when input exceeds 15 digits for secondNumber
+                        Toast.makeText(this, "Maximum 15 digits allowed for second number", Toast.LENGTH_SHORT).show()
+                    }
                 }
+
+                // Perform real-time calculation after updating the number
+                performRealTimeCalculation(result)
             }
         }
+
 
         // Dot button - to prevent multiple dots in a number
         dot.setOnClickListener {
@@ -110,6 +132,9 @@ class MainActivity : AppCompatActivity() {
                     tvDisplay.append(".")
                 }
             }
+
+            // Perform real-time calculation after adding the dot
+            performRealTimeCalculation(result)
         }
 
         // Handling operator button clicks
@@ -121,6 +146,9 @@ class MainActivity : AppCompatActivity() {
                     tvDisplay.append(" $operator ")
                     isOperatorSet = true
                 }
+
+                // Perform real-time calculation after selecting the operator
+                performRealTimeCalculation(result)
             }
         }
 
@@ -148,8 +176,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-
     // Function to perform calculation
     private fun calculate(num1: String, num2: String, operator: String): Double {
         val number1 = num1.toDouble()
@@ -160,7 +186,7 @@ class MainActivity : AppCompatActivity() {
             "-" -> number1 - number2
             "*" -> number1 * number2
             "/" -> if (number2 != 0.0) number1 / number2 else Double.NaN // Prevent division by zero
-            "%" -> number1 % number2
+            "%" -> if (number2 != 0.0) number1 % number2 else Double.NaN
             else -> 0.0
         }
     }
